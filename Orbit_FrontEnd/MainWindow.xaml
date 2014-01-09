@@ -1,0 +1,24 @@
+﻿<Window x:Class="MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <TextBlock Name="txtDisplay" FontFamily="Consolas"></TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button Margin="5" Name="btnInc">INC</Button>
+                <Button Margin="5" Name="btnDec">DEC</Button>
+                <Button Margin="5" Name="btnClick">CLICK</Button>
+                <Button Margin="5" Name="btnBack">BACK</Button>
+                <Button Margin="5" Name="btnCancel">CANCEL</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Margin="5" Name="btnPreset1">1</Button>
+                <Button Margin="5" Name="btnPreset2">2</Button>
+                <Button Margin="5" Name="btnPreset3">3</Button>
+                <Button Margin="5" Name="btnPreset4">4</Button>
+                <Button Margin="5" Name="btnPreset5">5</Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
