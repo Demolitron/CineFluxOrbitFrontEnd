@@ -1,6 +1,34 @@
 ﻿Imports System.IO
 
-Public Structure ControllerStatus
+Public Enum UI_Location
+    UI_LOC_MAINMENU = 1
+    UI_LOC_ORBITSETUP = 2
+    UI_LOC_ORBITRUN = 3
+    UI_LOC_WAYPOINTSETUP = 4
+    UI_LOC_WAYPOINTRUN = 5
+    UI_LOC_REALTIMERUN = 6
+    UI_LOC_SLEEP = 7
+    UI_LOC_EXTMODE = 8
+End Enum
+
+Public Structure ECMD_ControllerStatus
+    Public ReadOnly State As Byte
+    Public ReadOnly Prepmove_Ready As Byte
+    Public ReadOnly Speed As Single
+    Public ReadOnly Battery As Single
+    Public ReadOnly Position As Single
+    Public ReadOnly Time_sec As Single
+    Public Sub New(St As Byte, PMR As Byte, S As Single, B As Single, P As Single, Tm As Single)
+        State = St
+        Prepmove_Ready = PMR
+        Speed = S
+        Battery = B
+        Position = P
+        Time_sec = Tm
+    End Sub
+End Structure
+
+Public Structure UI_ControllerStatus
     Public ReadOnly Position As Single
     Public ReadOnly Speed As Single
     Public ReadOnly Battery As Single

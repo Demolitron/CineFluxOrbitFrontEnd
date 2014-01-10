@@ -39,7 +39,7 @@ Public Class ControllerComm
     Const USER_INPUT_MACRO_WAKE = "3C"
 
 
-    Private Locker As New Object
+    Private ResourceLocker As New Object
     Private Serial As IO.Ports.SerialPort
     Private MyID As Integer
 
@@ -51,14 +51,9 @@ Public Class ControllerComm
         MyID = ID
     End Sub
 
-    Public Function GetDisplay() As String
-        Dim DataBytes As Byte() = SendCommandWithReturnData(CMD_GETDISPLAY, Nothing)
-        Return System.Text.Encoding.ASCII.GetString(DataBytes, 0, 80)
-    End Function
-
-    Public Function SendCommandWithReturnData(cmd As String, Parameters() As Byte) As Byte()
+    Private Function SendCommandWithReturnData(cmd As String, Parameters() As Byte) As Byte()
         Dim data As String
-        SyncLock Locker
+        SyncLock ResourceLocker
             Try
                 Dim sb As New StringBuilder
                 Dim SendChkSum As Integer = 0
@@ -100,7 +95,7 @@ Public Class ControllerComm
 
     Private Sub SendCommandNoReturnData(Cmd As String, Parameters() As Byte)
         Dim data As String
-        SyncLock Locker
+        SyncLock ResourceLocker
             Try
                 Dim sb As New StringBuilder
                 Dim SendChkSum As Integer = 0
@@ -127,6 +122,23 @@ Public Class ControllerComm
         If data.Substring(1, 2) <> Cmd Then Throw New CinefluxOrbitUnexpectedAckException("Recieved Wrong ACK Command. Expected=" & Cmd & "  , Rx=" & data.Substring(1, 2))
     End Sub
 
+    Private Function StringToByteArray(ByVal hex As String) As Byte()
+        Dim NumberChars As Integer = hex.Length
+        Dim bytes((NumberChars >> 1) - 1) As Byte
+        Try
+            For i As Integer = 0 To NumberChars - 1 Step 2
+                bytes(i >> 1) = Convert.ToByte(hex.Substring(i, 2), 16)
+            Next
+        Catch ex As Exception
+            Console.WriteLine(ex.ToString)
+        End Try
+
+        Return bytes
+    End Function
+
+    Public Function GetDisplay() As String
+        Return System.Text.Encoding.ASCII.GetString(SendCommandWithReturnData(CMD_GETDISPLAY, Nothing), 0, 80)
+    End Function
 
     Public Function ReadPreset(ByVal PresetNumber) As Object
         Dim DataBytes As Byte() = SendCommandWithReturnData(CMD_GET_PRESET, New Byte() {PresetNumber})
@@ -182,14 +194,14 @@ Public Class ControllerComm
 
     End Function
 
-    Public Function GetStatus() As ControllerStatus
+    Public Function GetStatus() As UI_ControllerStatus
         Dim DataBytes As Byte() = SendCommandWithReturnData(CMD_GET_COMPLETE_STATUS, Nothing)
         Dim rdIdx As Integer = 0
         Dim D = System.Text.Encoding.ASCII.GetString(DataBytes, rdIdx, 40) : rdIdx += 40
         Dim P = BitConverter.ToSingle(DataBytes, rdIdx) : rdIdx += 4
         Dim S = BitConverter.ToSingle(DataBytes, rdIdx) : rdIdx += 4
         Dim B = BitConverter.ToSingle(DataBytes, rdIdx) : rdIdx += 4
-        Return New ControllerStatus(P, S, B, D)
+        Return New UI_ControllerStatus(P, S, B, D)
     End Function
 
     Public Sub RunPreset(ByVal PresetNumber As Integer)
@@ -205,24 +217,85 @@ Public Class ControllerComm
             Case 4
                 SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_RUNPRESET4})
         End Select
-
     End Sub
 
-    Public Shared Function StringToByteArray(ByVal hex As String) As Byte()
-        Dim NumberChars As Integer = hex.Length
-        Dim bytes((NumberChars >> 1) - 1) As Byte
-        Try
-            For i As Integer = 0 To NumberChars - 1 Step 2
-                bytes(i >> 1) = Convert.ToByte(hex.Substring(i, 2), 16)
-            Next
-        Catch ex As Exception
-            Console.WriteLine(ex.ToString)
-        End Try
+    Public Sub PushToOrbitSetup()
+        SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_ORBITMODE})
+    End Sub
 
-        Return bytes
+    Public Sub PushToWaypointSetup()
+        SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_WAYMODE})
+    End Sub
+
+    Public Sub PushToRealtimeMode()
+        SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_REALMODE})
+    End Sub
+
+    Public Sub PushToExternalMode()
+        SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_EXTMODE})
+    End Sub
+
+    Public Sub PushToSleep()
+        SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_SLEEP})
+    End Sub
+
+    Public Sub Wake()
+        SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_WAKE})
+    End Sub
+
+    Public Sub ECMD_PrepareMove(Distance_deg As Single, Speed_deg_sec As Single, Acceleration_deg_sec_sec As Single)
+        Dim MoveData As New MemoryStream
+        MoveData.Write(BitConverter.GetBytes(Distance_deg), 0, 4)
+        MoveData.Write(BitConverter.GetBytes(Speed_deg_sec), 0, 4)
+        MoveData.Write(BitConverter.GetBytes(Acceleration_deg_sec_sec), 0, 4)
+        SendCommandNoReturnData(CMD_PREP_MOVE, MoveData.ToArray)
+    End Sub
+
+    Public Sub ECMD_ExecuteMove()
+        SendCommandNoReturnData(CMD_EXEC_MOVE, Nothing)
+    End Sub
+
+    Public Sub ECMD_Stop()
+        SendCommandNoReturnData(CMD_STOP, Nothing)
+    End Sub
+
+    Public Function ECMD_Status() As ECMD_ControllerStatus
+        Dim data As Byte() = SendCommandWithReturnData(CMD_STATUS, Nothing)
+        Dim RdIdx As Integer = 0
+        Dim State As Byte = data(RdIdx) : RdIdx += 1
+        Dim PrepMoveReady As Byte = data(RdIdx) : RdIdx += 1
+        Dim Position As Single = BitConverter.ToSingle(data, RdIdx) : RdIdx += 4
+        Dim Speed As Single = BitConverter.ToSingle(data, RdIdx) : RdIdx += 4
+        Dim Time As Single = BitConverter.ToSingle(data, RdIdx) : RdIdx += 4
+        Dim Battery As Single = BitConverter.ToSingle(data, RdIdx) : RdIdx += 4
+        Return New ECMD_ControllerStatus(State, PrepMoveReady, Speed, Battery, Position, Time)
     End Function
 
+    Public Sub ECMD_Waypoint_Init()
+        SendCommandNoReturnData(CMD_PATH_INIT, Nothing)
+    End Sub
 
+    Public Sub ECMD_Waypoint_Add(Distance_deg As Int16, TravelTime_sec As UInt16, DwellTime_sec As UInt16)
+        Dim MoveData As New MemoryStream
+        MoveData.Write(BitConverter.GetBytes(Distance_deg), 0, 2)
+        MoveData.Write(BitConverter.GetBytes(TravelTime_sec), 0, 2)
+        MoveData.Write(BitConverter.GetBytes(DwellTime_sec), 0, 2)
+        SendCommandNoReturnData(CMD_PATH_ADD, MoveData.ToArray)
+    End Sub
+
+    Public Sub ECMD_Waypoint_Run()
+        SendCommandNoReturnData(CMD_PATH_RUN, Nothing)
+    End Sub
+
+    Public Sub ECMD_ReturnToUI()
+        SendCommandNoReturnData(CMD_EXIT, Nothing)
+    End Sub
+
+    Public Function GetUILocation() As UI_Location
+        Dim ret As UI_Location
+        ret = SendCommandWithReturnData(CMD_GET_UI_LOC, Nothing)(0)
+        Return ret
+    End Function
 End Class
 
 
