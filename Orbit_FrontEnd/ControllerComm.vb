@@ -26,17 +26,17 @@ Public Class ControllerComm
     Const CMD_PATH_RUN = "66"
     Const CMD_EXIT = "80"
 
-    Const USER_INPUT_MACRO_RUNPRESET0 = "32"
-    Const USER_INPUT_MACRO_RUNPRESET1 = "33"
-    Const USER_INPUT_MACRO_RUNPRESET2 = "34"
-    Const USER_INPUT_MACRO_RUNPRESET3 = "35"
-    Const USER_INPUT_MACRO_RUNPRESET4 = "36"
-    Const USER_INPUT_MACRO_ORBITMODE = "37"
-    Const USER_INPUT_MACRO_WAYMODE = "38"
-    Const USER_INPUT_MACRO_REALMODE = "39"
-    Const USER_INPUT_MACRO_EXTMODE = "3A"
-    Const USER_INPUT_MACRO_SLEEP = "3B"
-    Const USER_INPUT_MACRO_WAKE = "3C"
+    Const USER_INPUT_MACRO_RUNPRESET0 = 50
+    Const USER_INPUT_MACRO_RUNPRESET1 = 51
+    Const USER_INPUT_MACRO_RUNPRESET2 = 52
+    Const USER_INPUT_MACRO_RUNPRESET3 = 53
+    Const USER_INPUT_MACRO_RUNPRESET4 = 54
+    Const USER_INPUT_MACRO_ORBITMODE = 55
+    Const USER_INPUT_MACRO_WAYMODE = 56
+    Const USER_INPUT_MACRO_REALMODE = 57
+    Const USER_INPUT_MACRO_EXTMODE = 58
+    Const USER_INPUT_MACRO_SLEEP = 59
+    Const USER_INPUT_MACRO_WAKE = 60
 
 
     Private ResourceLocker As New Object
@@ -47,79 +47,95 @@ Public Class ControllerComm
         Serial = S
         Serial.Encoding = System.Text.Encoding.ASCII
         Serial.NewLine = "#"
-        Serial.ReadTimeout = 1000
+        Serial.ReadTimeout = 500
         MyID = ID
     End Sub
 
-    Private Function SendCommandWithReturnData(cmd As String, Parameters() As Byte) As Byte()
+    Private Function SendCommandWithReturnData(ByVal cmd As String, ByVal Parameters() As Byte) As Byte()
+        Dim retryCount As Integer = 0
+
         Dim data As String
         SyncLock ResourceLocker
-            Try
-                Dim sb As New StringBuilder
-                Dim SendChkSum As Integer = 0
-                sb.AppendFormat("@{0,2:X2}{1}", MyID, cmd)
-                If IsNothing(Parameters) = False Then
-                    For Each param In Parameters
-                        sb.AppendFormat("{0,2:X2}", param)
-                        SendChkSum += param
-                        If SendChkSum > &HFF Then SendChkSum -= &HFF
-                    Next
-                End If
-                sb.AppendFormat("{0,2:X2}", SendChkSum)
-                sb.Append("#")
-                Serial.ReadExisting()
-                Serial.Write(sb.ToString)
-                data = Serial.ReadLine()
-            Catch ex As TimeoutException
-                Throw New CinefluxOrbitSerialTimeoutException
-            Catch ex As Exception
-                Throw ex
-            End Try
+            While (True)
+                Try
+                    Dim sb As New StringBuilder
+                    Dim SendChkSum As Integer = 0
+                    sb.AppendFormat("@{0,2:X2}{1}", MyID, cmd)
+                    If IsNothing(Parameters) = False Then
+                        For Each param In Parameters
+                            sb.AppendFormat("{0,2:X2}", param)
+                            SendChkSum += param
+                            If SendChkSum > &HFF Then SendChkSum -= &HFF
+                        Next
+                    End If
+                    sb.AppendFormat("{0,2:X2}", SendChkSum)
+                    sb.AppendFormat("{0,2:X2}", SendChkSum)
+                    sb.Append("#")
+                    Serial.ReadExisting()
+                    Serial.Write(sb.ToString)
+                    data = Serial.ReadLine()
+                    Exit While
+                Catch ex As TimeoutException
+                    retryCount += 1
+                    If retryCount > 3 Then Throw New CinefluxOrbitSerialTimeoutException
+                Catch ex As Exception
+                    Throw ex
+                End Try
+            End While
         End SyncLock
 
         If data.Substring(0, 1) <> "$" Then Throw CinefluxOrbitNackException.GenerateNew(StringToByteArray(data.Substring(1, 4)))
         If data.Substring(1, 2) <> cmd Then Throw New CinefluxOrbitUnexpectedAckException("Recieved Wrong ACK Command. Expected=" & cmd & "  , Rx=" & data.Substring(1, 2))
 
-        Dim EndPos = InStr(data, "#")
-        Dim DataBytes() As Byte = StringToByteArray(data.Substring(3, EndPos - 3))
+        Dim DataBytes() As Byte = StringToByteArray(data.Substring(3, data.Length - 3))
         Dim ChkSum As Integer = 0
         For idx = 0 To DataBytes.Length - 2
-            ChkSum += idx
-            If ChkSum > &HFF Then ChkSum -= &HFF
+            ChkSum += DataBytes(idx)
+            ChkSum = ChkSum Mod 256
         Next
+
         If ChkSum <> DataBytes(DataBytes.Length - 1) Then
             Throw New CinefluxOrbitChecksumMismatchException("Calculated Checksum=" & ChkSum & " Expected=" & DataBytes(DataBytes.Length - 1))
         End If
         Return DataBytes
     End Function
 
-    Private Sub SendCommandNoReturnData(Cmd As String, Parameters() As Byte)
+    Private Sub SendCommandNoReturnData(ByVal Cmd As String, ByVal Parameters() As Byte)
+        Dim retryCount As Integer = 0
         Dim data As String
         SyncLock ResourceLocker
-            Try
-                Dim sb As New StringBuilder
-                Dim SendChkSum As Integer = 0
-                sb.AppendFormat("@{0,2:X2}{1}", MyID, Cmd)
-                If IsNothing(Parameters) = False Then
-                    For Each param In Parameters
-                        sb.AppendFormat("{0,2:X2}", param)
-                        SendChkSum += param
-                        If SendChkSum > &HFF Then SendChkSum -= &HFF
-                    Next
-                End If
-                sb.AppendFormat("{0,2:X2}", SendChkSum)
-                sb.Append("#")
-                Serial.ReadExisting()
-                Serial.Write(sb.ToString)
-                data = Serial.ReadLine()
-            Catch ex As TimeoutException
-                Throw New CinefluxOrbitSerialTimeoutException
-            Catch ex As Exception
-                Throw ex
-            End Try
+            While (True)
+                Try
+                    Dim sb As New StringBuilder
+                    Dim SendChkSum As Integer = 0
+                    sb.AppendFormat("@{0,2:X2}{1}", MyID, Cmd)
+                    If IsNothing(Parameters) = False Then
+                        For Each param In Parameters
+                            sb.AppendFormat("{0,2:X2}", param)
+                            SendChkSum += param
+                            SendChkSum = SendChkSum Mod 256
+                        Next
+                    End If
+                    sb.AppendFormat("{0,2:X2}", SendChkSum)
+                    sb.Append("#")
+                    Serial.ReadExisting()
+                    Serial.Write(sb.ToString)
+                    data = Serial.ReadLine()
+                    Exit While
+                Catch ex As TimeoutException
+                    retryCount += 1
+                    If retryCount > 3 Then Throw New CinefluxOrbitSerialTimeoutException
+                Catch ex As Exception
+                    Throw ex
+                End Try
+            End While
         End SyncLock
-        If data.Substring(0, 1) <> "$" Then Throw CinefluxOrbitNackException.GenerateNew(StringToByteArray(data.Substring(1, 4)))
-        If data.Substring(1, 2) <> Cmd Then Throw New CinefluxOrbitUnexpectedAckException("Recieved Wrong ACK Command. Expected=" & Cmd & "  , Rx=" & data.Substring(1, 2))
+        If data.Substring(0, 1) <> "$" Then
+            Throw CinefluxOrbitNackException.GenerateNew(StringToByteArray(data.Substring(1, 4)))
+        End If
+        If data.Substring(1, 2) <> Cmd Then
+            Throw New CinefluxOrbitUnexpectedAckException("Recieved Wrong ACK Command. Expected=" & Cmd & "  , Rx=" & data.Substring(1, 2))
+        End If
     End Sub
 
     Private Function StringToByteArray(ByVal hex As String) As Byte()
@@ -142,10 +158,10 @@ Public Class ControllerComm
 
     Public Function ReadPreset(ByVal PresetNumber) As Object
         Dim DataBytes As Byte() = SendCommandWithReturnData(CMD_GET_PRESET, New Byte() {PresetNumber})
-        If DataBytes(0) = 1 Then
+        If DataBytes(0) = 2 Then
             Return OrbitPreset.Deserialize(DataBytes)
         End If
-        If DataBytes(0) = 2 Then
+        If DataBytes(0) = 1 Then
             Return WaypointPreset.Deserialize(DataBytes)
         End If
         Return Nothing

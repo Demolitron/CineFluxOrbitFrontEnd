@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Runtime.InteropServices
 
 Public Enum UI_Location
     UI_LOC_MAINMENU = 1
@@ -11,6 +12,7 @@ Public Enum UI_Location
     UI_LOC_EXTMODE = 8
 End Enum
 
+<StructLayout(LayoutKind.Sequential)> _
 Public Structure ECMD_ControllerStatus
     Public ReadOnly State As Byte
     Public ReadOnly Prepmove_Ready As Byte
@@ -18,7 +20,7 @@ Public Structure ECMD_ControllerStatus
     Public ReadOnly Battery As Single
     Public ReadOnly Position As Single
     Public ReadOnly Time_sec As Single
-    Public Sub New(St As Byte, PMR As Byte, S As Single, B As Single, P As Single, Tm As Single)
+    Public Sub New(ByVal St As Byte, ByVal PMR As Byte, ByVal S As Single, ByVal B As Single, ByVal P As Single, ByVal Tm As Single)
         State = St
         Prepmove_Ready = PMR
         Speed = S
@@ -33,7 +35,7 @@ Public Structure UI_ControllerStatus
     Public ReadOnly Speed As Single
     Public ReadOnly Battery As Single
     Public ReadOnly Display As String
-    Public Sub New(P As Single, S As Single, B As Single, D As String)
+    Public Sub New(ByVal P As Single, ByVal S As Single, ByVal B As Single, ByVal D As String)
         Position = P
         Speed = S
         Battery = B
@@ -41,6 +43,7 @@ Public Structure UI_ControllerStatus
     End Sub
 End Structure
 
+<StructLayout(LayoutKind.Sequential)> _
 Public Structure OrbitPreset
     Public Const Type As Byte = 2
     Public Origin_Deg As UInt16
@@ -52,7 +55,7 @@ Public Structure OrbitPreset
     Public Speed As Single
     Public SpeedMode As Byte
 
-    Public Shared Function Deserialize(DataBytes() As Byte) As OrbitPreset
+    Public Shared Function Deserialize(ByVal DataBytes() As Byte) As OrbitPreset
         Dim idx As Integer = 0
         Dim ret As New OrbitPreset
         idx += 1
@@ -78,11 +81,15 @@ Public Structure OrbitPreset
             ms.Write(BitConverter.GetBytes(CycleTime), 0, 4)
             ms.Write(BitConverter.GetBytes(Speed), 0, 4)
             ms.WriteByte(SpeedMode)
+            For idx = 0 To 97
+                ms.WriteByte(0)
+            Next
             Return ms.ToArray
         End Using
     End Function
 End Structure
 
+<StructLayout(LayoutKind.Sequential)> _
 Public Structure WaypointPreset
     Public Const Type As Byte = 1
     Public Origin As UInt16
@@ -93,7 +100,7 @@ Public Structure WaypointPreset
     Public TravelTimes() As UInt16
     Public DwellTimes() As UInt16
 
-    Public Shared Function Deserialize(DataBytes() As Byte) As WaypointPreset
+    Public Shared Function Deserialize(ByVal DataBytes() As Byte) As WaypointPreset
         Dim ret As New WaypointPreset
         ReDim ret.TravelTimes(17)
         ReDim ret.DwellTimes(18)
@@ -106,13 +113,13 @@ Public Structure WaypointPreset
         ret.Bounce = DataBytes(idx) : idx += 1
         ret.LoopCount = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
         For x = 0 To 17
-            ret.Distances(x) = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
+            ret.Distances(x) = BitConverter.ToInt16(DataBytes, idx) : idx += 2
         Next
-        For idx = 0 To 17
-            ret.TravelTimes(idx) = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
+        For x = 0 To 17
+            ret.TravelTimes(x) = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
         Next
-        For idx = 0 To 18
-            ret.DwellTimes(idx) = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
+        For x = 0 To 18
+            ret.DwellTimes(x) = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
         Next
         Return ret
     End Function
@@ -123,7 +130,6 @@ Public Structure WaypointPreset
             ms.Write(BitConverter.GetBytes(Origin), 0, 2)
             ms.WriteByte(PointCount)
             ms.WriteByte(Bounce)
-            ms.WriteByte(PointCount)
             ms.Write(BitConverter.GetBytes(LoopCount), 0, 2)
             For x = 0 To 17
                 ms.Write(BitConverter.GetBytes(Distances(x)), 0, 2)
@@ -133,6 +139,9 @@ Public Structure WaypointPreset
             Next
             For x = 0 To 18
                 ms.Write(BitConverter.GetBytes(DwellTimes(x)), 0, 2)
+            Next
+            For idx = 0 To 2
+                ms.WriteByte(0)
             Next
             Return ms.ToArray
         End Using

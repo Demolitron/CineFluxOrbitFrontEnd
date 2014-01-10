@@ -4,6 +4,7 @@ Class MainWindow
     Dim S As New IO.Ports.SerialPort("COM5", 115200, IO.Ports.Parity.None, 8, 1)
     Dim CTRL As ControllerComm
     Dim UpdateUI As System.Threading.Thread
+    Dim Presets(4) As Object
 
     Private Sub MainWindow_Closing(ByVal sender As Object, ByVal e As System.ComponentModel.CancelEventArgs) Handles Me.Closing
         UpdateUI.Abort()
@@ -20,7 +21,42 @@ Class MainWindow
         End While
         CTRL = New ControllerComm(S, &HAA)
         UpdateUI = New System.Threading.Thread(AddressOf Refresh)
+
+        'Presets(0) = CTRL.ReadPreset(1)
+        'Presets(1) = CTRL.ReadPreset(2)
+        'Presets(2) = CTRL.ReadPreset(3)
+        'Presets(3) = CTRL.ReadPreset(4)
+        'Presets(4) = CTRL.ReadPreset(5)
+
+        'CTRL.PushToExternalMode()
+        'CTRL.ECMD_Waypoint_Init()
+        'CTRL.ECMD_Waypoint_Add(180, 5, 1)
+        'CTRL.ECMD_Waypoint_Add(180, 10, 1)
+        'CTRL.ECMD_Waypoint_Add(45, 2, 2)
+        'CTRL.ECMD_Waypoint_Run()
+        'Dim Stat As ECMD_ControllerStatus
+        'Stat = CTRL.ECMD_Status()
+        'While (Stat.State <> 0)
+        '    Stat = CTRL.ECMD_Status()
+        'End While
+
+        'CTRL.ECMD_PrepareMove(180, 90, 90)
+        'CTRL.ECMD_ExecuteMove()
+        'CTRL.ECMD_PrepareMove(-360, 90, 90)
+        'Dim Stat As ECMD_ControllerStatus
+        'Stat = CTRL.ECMD_Status()
+        'While (Stat.State <> 0)
+        '    Stat = CTRL.ECMD_Status()
+        'End While
+        'CTRL.ECMD_ExecuteMove()
+        'Stat = CTRL.ECMD_Status()
+        'While (Stat.State <> 0)
+        '    Stat = CTRL.ECMD_Status()
+        'End While
+
+        'CTRL.ECMD_ReturnToUI()
         UpdateUI.Start()
+
     End Sub
 
     Private Sub Refresh()
@@ -35,7 +71,12 @@ Class MainWindow
                                   Dim LeftSB As New StringBuilder
                                   LeftSB.AppendFormat("Position: {0}°", Math.Round(ret.Position, 1))
                                   LeftSB.AppendLine()
-                                  LeftSB.AppendFormat("   Angle: {0}°", Math.Round(ret.Position Mod 360, 1))
+                                  If ret.Position < 0 Then
+                                      LeftSB.AppendFormat("   Angle: {0}°", 360 + Math.Round(ret.Position Mod 360, 1))
+                                  Else
+                                      LeftSB.AppendFormat("   Angle: {0}°", Math.Round(ret.Position Mod 360, 1))
+                                  End If
+
                                   LeftSB.AppendLine()
                                   LeftSB.AppendFormat("   Speed: {0}°/s", Math.Round(ret.Speed, 2))
                                   LeftSB.AppendLine()
@@ -84,5 +125,26 @@ Class MainWindow
 
     Private Sub btnPreset5_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnPreset5.Click
         CTRL.RunPreset(4)
+    End Sub
+
+    Private Sub Wake_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Wake.Click
+        CTRL.Wake()
+
+    End Sub
+
+    Private Sub Sleep_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Sleep.Click
+        CTRL.PushToSleep()
+    End Sub
+
+    Private Sub Orbit_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Orbit.Click
+        CTRL.PushToOrbitSetup()
+    End Sub
+
+    Private Sub Waypoint_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Waypoint.Click
+        CTRL.PushToWaypointSetup()
+    End Sub
+
+    Private Sub Realtime_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Realtime.Click
+        CTRL.PushToRealtimeMode()
     End Sub
 End Class
