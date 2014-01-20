@@ -1,7 +1,7 @@
 ﻿Imports System.Text
 
 Class MainWindow
-    Dim S As New IO.Ports.SerialPort("COM5", 115200, IO.Ports.Parity.None, 8, 1)
+    Dim S As IO.Ports.SerialPort
     Dim CTRL As ControllerComm
     Dim UpdateUI As System.Threading.Thread
     Dim Presets(4) As Object
@@ -12,14 +12,71 @@ Class MainWindow
     End Sub
 
     Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As System.Windows.RoutedEventArgs) Handles Me.Loaded
+        'Dim buf(3) As Byte
+        'Using fs As New IO.FileStream("C:\rawdata.dat", IO.FileMode.Open, IO.FileAccess.Read)
+        '    Using sr As New IO.StreamWriter("C:\positions.csv")
+        '        While fs.Position < fs.Length
+        '            fs.Read(buf, 0, 4)
+        '            sr.WriteLine(BitConverter.ToUInt32(buf, 0))
+        '            sr.Flush()
+        '        End While
+        '    End Using
+        'End Using
+
+        Try
+            If IO.File.Exists(System.AppDomain.CurrentDomain.BaseDirectory & "ComPort.txt") = False Then
+                Using fs As New IO.StreamWriter(System.AppDomain.CurrentDomain.BaseDirectory & "ComPort.txt")
+                    fs.WriteLine("COM1")
+                End Using
+            End If
+            Using fs As New IO.StreamReader(System.AppDomain.CurrentDomain.BaseDirectory & "ComPort.txt")
+                Dim ComPort = fs.ReadLine
+                S = New IO.Ports.SerialPort(ComPort.Trim, 115200, IO.Ports.Parity.None, 8, 1)
+            End Using
+        Catch ex As Exception
+            MsgBox("There was a problem..." & ex.ToString)
+            Environment.Exit(-1)
+        End Try
+
+
+        Dim tryC As Integer = 0
         While (S.IsOpen = False)
             Try
                 S.Open()
             Catch ex As Exception
-
+                tryC += 1
+                If tryC > 5 Then
+                    MsgBox("Unable to open the ComPort: " & ex.ToString)
+                    Environment.Exit(-1)
+                End If
             End Try
         End While
+
+        'Dim st As New Stopwatch
+        ''Using fs As New IO.FileStream("C:\rawdata.dat", IO.FileMode.Create, IO.FileAccess.Write)
+        'Using fs As New IO.StreamWriter("C:\Timmings.csv")
+        '    While True
+        '        If S.BytesToRead >= 4 Then
+        '            S.ReadExisting()
+        '            fs.WriteLine(st.ElapsedTicks)
+        '            st.Restart()
+        '            fs.Flush()
+        '        End If
+        '    End While
+        'End Using
+
         CTRL = New ControllerComm(S, &HAA)
+
+        Dim Config = CTRL.GetConfig
+
+        Config.PID_Kp = 48
+        Config.PID_Kd = 300
+        Config.PID_MaxError = 20
+        CTRL.SetConfig(Config)
+
+        'Dim CheckCfg = CTRL.GetConfig
+
+
         UpdateUI = New System.Threading.Thread(AddressOf Refresh)
 
         'Presets(0) = CTRL.ReadPreset(1)
@@ -69,12 +126,12 @@ Class MainWindow
                                   DirectionIndicator.RenderTransform = New RotateTransform(ret.Position Mod 360, 100, 100)
                                   txtDisplay.Text = ret.Display.Substring(0, 20) & vbCrLf & ret.Display.Substring(20, 20) & vbCrLf
                                   Dim LeftSB As New StringBuilder
-                                  LeftSB.AppendFormat("Position: {0}°", Math.Round(ret.Position, 1))
+                                  LeftSB.AppendFormat("Position: {0}°", Math.Round(ret.Position, 3))
                                   LeftSB.AppendLine()
                                   If ret.Position < 0 Then
-                                      LeftSB.AppendFormat("   Angle: {0}°", 360 + Math.Round(ret.Position Mod 360, 1))
+                                      LeftSB.AppendFormat("   Angle: {0}°", 360 + Math.Round(ret.Position Mod 360, 3))
                                   Else
-                                      LeftSB.AppendFormat("   Angle: {0}°", Math.Round(ret.Position Mod 360, 1))
+                                      LeftSB.AppendFormat("   Angle: {0}°", Math.Round(ret.Position Mod 360, 3))
                                   End If
 
                                   LeftSB.AppendLine()

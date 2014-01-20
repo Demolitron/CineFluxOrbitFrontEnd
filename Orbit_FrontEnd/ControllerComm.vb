@@ -17,6 +17,9 @@ Public Class ControllerComm
     Const CMD_UI_MACRO = "19"
     Const CMD_GET_UI_LOC = "1A"
     Const CMD_GET_COMPLETE_STATUS = "1B"
+    Const CMD_GET_CONFIG = "1C"
+    Const CMD_SET_CONFIG = "1D"
+
     Const CMD_PREP_MOVE = "60"
     Const CMD_EXEC_MOVE = "61"
     Const CMD_STOP = "62"
@@ -25,6 +28,7 @@ Public Class ControllerComm
     Const CMD_PATH_ADD = "65"
     Const CMD_PATH_RUN = "66"
     Const CMD_EXIT = "80"
+
 
     Const USER_INPUT_MACRO_RUNPRESET0 = 50
     Const USER_INPUT_MACRO_RUNPRESET1 = 51
@@ -312,6 +316,22 @@ Public Class ControllerComm
         ret = SendCommandWithReturnData(CMD_GET_UI_LOC, Nothing)(0)
         Return ret
     End Function
+
+    Public Function GetConfig() As OrbitConfigStruct
+        Dim DataBytes As Byte() = SendCommandWithReturnData(CMD_GET_CONFIG, Nothing)
+        Return OrbitConfigStruct.Deserialize(DataBytes)
+    End Function
+
+    Public Sub SetConfig(ByVal Config As OrbitConfigStruct)
+        Dim Dat = Config.Serialize
+        Dim Check = OrbitConfigStruct.Deserialize(Dat)
+
+        SendCommandNoReturnData(CMD_SET_CONFIG, Config.Serialize)
+    End Sub
+
+
 End Class
+
+
 
 
