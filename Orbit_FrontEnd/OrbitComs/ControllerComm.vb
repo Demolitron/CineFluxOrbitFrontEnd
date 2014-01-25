@@ -19,6 +19,7 @@ Public Class ControllerComm
     Const CMD_GET_COMPLETE_STATUS = "1B"
     Const CMD_GET_CONFIG = "1C"
     Const CMD_SET_CONFIG = "1D"
+    Const CMD_SET_ID = "1E"
 
     Const CMD_PREP_MOVE = "60"
     Const CMD_EXEC_MOVE = "61"
@@ -43,9 +44,46 @@ Public Class ControllerComm
     Const USER_INPUT_MACRO_WAKE = 60
 
 
+    Public Shared Function Echo(ByVal S As IO.Ports.SerialPort) As Byte
+        S.Encoding = System.Text.Encoding.ASCII
+        S.NewLine = "#"
+        S.ReadTimeout = 500
+
+        Dim retryCount As Integer = 0
+
+        Dim data As String
+        While (True)
+            Try
+                Dim sb As New StringBuilder
+                Dim SendChkSum As Integer = 0
+                sb.AppendFormat("@{0,2:X2}", &HFF)
+                sb.Append("#")
+                S.ReadExisting()
+                S.Write(sb.ToString)
+                data = S.ReadLine()
+                Exit While
+            Catch ex As TimeoutException
+                retryCount += 1
+                If retryCount > 3 Then Return 0
+            Catch ex As Exception
+                Return 0
+            End Try
+        End While
+
+        If data.Substring(0, 1) <> "$" Then Throw CinefluxOrbitNackException.GenerateNew(StringToByteArray(data.Substring(1, 4)))
+        Dim RetID = CInt("&H" & data.Substring(1, 2))
+        Return RetID
+    End Function
+
     Private ResourceLocker As New Object
     Private Serial As IO.Ports.SerialPort
     Private MyID As Integer
+
+    Public ReadOnly Property SerialPortName As String
+        Get
+            Return Serial.PortName
+        End Get
+    End Property
 
     Public Sub New(ByVal S As IO.Ports.SerialPort, ID As Integer)
         Serial = S
@@ -142,8 +180,8 @@ Public Class ControllerComm
         End If
     End Sub
 
-    Private Function StringToByteArray(ByVal hex As String) As Byte()
-        Dim NumberChars As Integer = hex.Length
+    Private Shared Function StringToByteArray(ByVal hex As String) As Byte()
+        Dim NumberChars As Integer = Hex.Length
         Dim bytes((NumberChars >> 1) - 1) As Byte
         Try
             For i As Integer = 0 To NumberChars - 1 Step 2
@@ -171,7 +209,7 @@ Public Class ControllerComm
         Return Nothing
     End Function
 
-    Public Sub WritePreset(PresetNumber As Byte, Preset As Object)
+    Public Sub WritePreset(ByVal PresetNumber As Byte, ByVal Preset As Object)
         Dim ms As New MemoryStream
         ms.WriteByte(PresetNumber)
         If TypeOf (Preset) Is WaypointPreset Then
@@ -221,7 +259,8 @@ Public Class ControllerComm
         Dim P = BitConverter.ToSingle(DataBytes, rdIdx) : rdIdx += 4
         Dim S = BitConverter.ToSingle(DataBytes, rdIdx) : rdIdx += 4
         Dim B = BitConverter.ToSingle(DataBytes, rdIdx) : rdIdx += 4
-        Return New UI_ControllerStatus(P, S, B, D)
+        Dim L = DataBytes(rdIdx)
+        Return New UI_ControllerStatus(P, S, B, D, L)
     End Function
 
     Public Sub RunPreset(ByVal PresetNumber As Integer)
@@ -263,7 +302,7 @@ Public Class ControllerComm
         SendCommandNoReturnData(CMD_UI_MACRO, New Byte() {USER_INPUT_MACRO_WAKE})
     End Sub
 
-    Public Sub ECMD_PrepareMove(Distance_deg As Single, Speed_deg_sec As Single, Acceleration_deg_sec_sec As Single)
+    Public Sub ECMD_PrepareMove(ByVal Distance_deg As Single, ByVal Speed_deg_sec As Single, ByVal Acceleration_deg_sec_sec As Single)
         Dim MoveData As New MemoryStream
         MoveData.Write(BitConverter.GetBytes(Distance_deg), 0, 4)
         MoveData.Write(BitConverter.GetBytes(Speed_deg_sec), 0, 4)
@@ -295,7 +334,7 @@ Public Class ControllerComm
         SendCommandNoReturnData(CMD_PATH_INIT, Nothing)
     End Sub
 
-    Public Sub ECMD_Waypoint_Add(Distance_deg As Int16, TravelTime_sec As UInt16, DwellTime_sec As UInt16)
+    Public Sub ECMD_Waypoint_Add(ByVal Distance_deg As Int16, ByVal TravelTime_sec As UInt16, ByVal DwellTime_sec As UInt16)
         Dim MoveData As New MemoryStream
         MoveData.Write(BitConverter.GetBytes(Distance_deg), 0, 2)
         MoveData.Write(BitConverter.GetBytes(TravelTime_sec), 0, 2)
@@ -327,6 +366,11 @@ Public Class ControllerComm
         Dim Check = OrbitConfigStruct.Deserialize(Dat)
 
         SendCommandNoReturnData(CMD_SET_CONFIG, Config.Serialize)
+    End Sub
+
+    Public Sub SetID(ByVal ID As Byte)
+        SendCommandNoReturnData(CMD_SET_ID, New Byte() {ID})
+        MyID = ID
     End Sub
 
 

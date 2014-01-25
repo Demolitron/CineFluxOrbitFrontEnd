@@ -70,11 +70,28 @@
     <Compile Include="CircularSelector.xaml.vb">
       <DependentUpon>CircularSelector.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EndModeSelector.xaml.vb">
+      <DependentUpon>EndModeSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OrbitComs\OrbitSearch.vb" />
+    <Compile Include="OrbitSeeker.xaml.vb">
+      <DependentUpon>OrbitSeeker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PresetControls.xaml.vb">
+      <DependentUpon>PresetControls.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings.vb" />
+    <Compile Include="SpeedSelector.xaml.vb">
+      <DependentUpon>SpeedSelector.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Window1.xaml.vb">
       <DependentUpon>Window1.xaml</DependentUpon>
     </Compile>
     <Page Include="CircularSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EndModeSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -86,13 +103,25 @@
       <DependentUpon>Application.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CinefluxOrbitExceptions.vb" />
-    <Compile Include="CinefluxOrbitStructures.vb" />
-    <Compile Include="ControllerComm.vb" />
+    <Compile Include="OrbitComs\CinefluxOrbitExceptions.vb" />
+    <Compile Include="OrbitComs\CinefluxOrbitStructures.vb" />
+    <Compile Include="OrbitComs\ControllerComm.vb" />
     <Compile Include="MainWindow.xaml.vb">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="OrbitSeeker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PresetControls.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SpeedSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Window1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -145,6 +174,9 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <AppDesigner Include="My Project\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ClockWise.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

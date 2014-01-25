@@ -67,12 +67,12 @@ Class MainWindow
 
         CTRL = New ControllerComm(S, &HAA)
 
-        Dim Config = CTRL.GetConfig
+        Dim config = CTRL.GetConfig
 
-        Config.PID_Kp = 48
-        Config.PID_Kd = 300
-        Config.PID_MaxError = 20
-        CTRL.SetConfig(Config)
+        config.PID_Kp = 64
+        config.PID_Kd = 200
+        config.PID_MaxError = 20
+        CTRL.SetConfig(config)
 
         'Dim CheckCfg = CTRL.GetConfig
 
@@ -123,7 +123,12 @@ Class MainWindow
             'System.Threading.Thread.Sleep(50)
             ret = CTRL.GetStatus
             Dispatcher.Invoke(Sub()
-                                  DirectionIndicator.RenderTransform = New RotateTransform(ret.Position Mod 360, 100, 100)
+                                  If ret.Location = UI_Location.UI_LOC_SLEEP Then
+                                      Sleep.Content = "Wake"
+                                  Else
+                                      Sleep.Content = "Sleep"
+                                  End If
+                                  CircularSelector1.CurrentPosition = ret.Position
                                   txtDisplay.Text = ret.Display.Substring(0, 20) & vbCrLf & ret.Display.Substring(20, 20) & vbCrLf
                                   Dim LeftSB As New StringBuilder
                                   LeftSB.AppendFormat("Position: {0}°", Math.Round(ret.Position, 3))
@@ -184,13 +189,14 @@ Class MainWindow
         CTRL.RunPreset(4)
     End Sub
 
-    Private Sub Wake_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Wake.Click
-        CTRL.Wake()
-
-    End Sub
-
     Private Sub Sleep_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Sleep.Click
-        CTRL.PushToSleep()
+        Dim ret = CTRL.GetUILocation
+        If ret = UI_Location.UI_LOC_SLEEP Then
+            CTRL.Wake()
+        Else
+            CTRL.PushToSleep()
+        End If
+
     End Sub
 
     Private Sub Orbit_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Orbit.Click

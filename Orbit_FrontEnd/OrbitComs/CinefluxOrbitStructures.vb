@@ -35,11 +35,13 @@ Public Structure UI_ControllerStatus
     Public ReadOnly Speed As Single
     Public ReadOnly Battery As Single
     Public ReadOnly Display As String
-    Public Sub New(ByVal P As Single, ByVal S As Single, ByVal B As Single, ByVal D As String)
+    Public ReadOnly Location As UI_Location
+    Public Sub New(ByVal P As Single, ByVal S As Single, ByVal B As Single, ByVal D As String, ByVal L As UI_Location)
         Position = P
         Speed = S
         Battery = B
         Display = D
+        Location = L
     End Sub
 End Structure
 
@@ -167,6 +169,7 @@ Public Structure OrbitConfigStruct
     Public PID_Kd As UInt16
     Public Counts_Per_Degree As Single
     Public Degrees_Per_Count As Single
+    Public MyID As Byte
 
     Public Function Serialize() As Byte()
         Using ms As New MemoryStream()
@@ -186,6 +189,7 @@ Public Structure OrbitConfigStruct
             ms.Write(BitConverter.GetBytes(PID_Kd), 0, 2)
             ms.Write(BitConverter.GetBytes(Counts_Per_Degree), 0, 4)
             ms.Write(BitConverter.GetBytes(Degrees_Per_Count), 0, 4)
+            ms.WriteByte(MyID)
             Return ms.ToArray
         End Using
     End Function
@@ -208,7 +212,8 @@ Public Structure OrbitConfigStruct
         ret.PID_Kp = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
         ret.PID_Kd = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
         ret.Counts_Per_Degree = BitConverter.ToSingle(DataBytes, idx) : idx += 4
-        ret.Degrees_Per_Count = BitConverter.ToSingle(DataBytes, idx) : idx += 4        
+        ret.Degrees_Per_Count = BitConverter.ToSingle(DataBytes, idx) : idx += 4
+        ret.MyID = DataBytes(idx) : idx += 1
         Return ret
     End Function
 
