@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Orbit_FrontEnd", "Orbit_FrontEnd\Orbit_FrontEnd.vbproj", "{89687EB5-4CB8-42FC-B6E3-C567702F15A6}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "UITester", "UITester\UITester.vbproj", "{C711CFF5-DFB3-4F5D-AB02-F8A100D5570D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{89687EB5-4CB8-42FC-B6E3-C567702F15A6}.Debug|x86.Build.0 = Debug|x86
 		{89687EB5-4CB8-42FC-B6E3-C567702F15A6}.Release|x86.ActiveCfg = Release|x86
 		{89687EB5-4CB8-42FC-B6E3-C567702F15A6}.Release|x86.Build.0 = Release|x86
+		{C711CFF5-DFB3-4F5D-AB02-F8A100D5570D}.Debug|x86.ActiveCfg = Debug|x86
+		{C711CFF5-DFB3-4F5D-AB02-F8A100D5570D}.Debug|x86.Build.0 = Debug|x86
+		{C711CFF5-DFB3-4F5D-AB02-F8A100D5570D}.Release|x86.ActiveCfg = Release|x86
+		{C711CFF5-DFB3-4F5D-AB02-F8A100D5570D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

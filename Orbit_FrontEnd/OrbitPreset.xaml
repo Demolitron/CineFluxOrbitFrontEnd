@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="OrbitPresetBuilder"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="474" d:DesignWidth="219" xmlns:my="clr-namespace:Orbit_FrontEnd">
+    <Grid>
+        <StackPanel Margin="5" Orientation="Vertical">
+            <TextBlock Margin="5">Select Origin:</TextBlock>
+            <my:CircularSelector Margin="5" Width="200"  x:Name="OrbitOrigin" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Separator></Separator>
+            <TextBlock Margin="5">Direction:</TextBlock>
+            <ComboBox Name="OrbitDirection" Margin="5">
+                <ComboBoxItem>Counter Clockwise</ComboBoxItem>
+                <ComboBoxItem>Clockwise</ComboBoxItem>                
+            </ComboBox>
+            <Separator></Separator>
+            <TextBlock Margin="5">End Mode:</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox Name="OrbitEndMode" Margin="5">
+                    <ComboBoxItem>By Orbit Count</ComboBoxItem>
+                    <ComboBoxItem>By Time</ComboBoxItem>
+                    <ComboBoxItem>Never Ending</ComboBoxItem>
+                </ComboBox>
+                <TextBox Name="OrbitEndModeCounts" Margin="5">XXX.XX</TextBox>                
+                <TextBlock Margin="5">Orbits</TextBlock>
+                <my:TimeSpanSelector x:Name="OrbitEndModeTime" />
+            </StackPanel>
+
+            <Separator></Separator>
+            <TextBlock Margin="5">Speed:</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox Name="OrbitSpeedMode" Margin="5">
+                    <ComboBoxItem>Manual</ComboBoxItem>
+                    <ComboBoxItem>Time Per Orbit</ComboBoxItem>
+                    <ComboBoxItem>Time For All Orbits</ComboBoxItem>
+                </ComboBox>
+                <TextBox Name="OrbitSpeedModeValue" Margin="5">XXX.XX</TextBox>
+                <TextBlock Margin="5">Deg/Sec</TextBlock>
+            </StackPanel>
+            <Separator></Separator>
+            <Button Name="OrbitSave" Margin="5">Save</Button>
+        </StackPanel>
+
+
+
+    </Grid>
+</UserControl>

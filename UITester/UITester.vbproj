@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{89687EB5-4CB8-42FC-B6E3-C567702F15A6}</ProjectGuid>
+    <ProjectGuid>{C711CFF5-DFB3-4F5D-AB02-F8A100D5570D}</ProjectGuid>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{F184B08F-C81C-45F6-A57F-5ABD9991F28F}</ProjectTypeGuids>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Orbit_FrontEnd</RootNamespace>
-    <AssemblyName>Orbit_FrontEnd</AssemblyName>
+    <RootNamespace>UITester</RootNamespace>
+    <AssemblyName>UITester</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <MyType>Custom</MyType>
@@ -20,7 +20,7 @@
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>Orbit_FrontEnd.xml</DocumentationFile>
+    <DocumentationFile>UITester.xml</DocumentationFile>
     <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036,42314</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -32,7 +32,7 @@
     <IncrementalBuild>false</IncrementalBuild>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>Orbit_FrontEnd.xml</DocumentationFile>
+    <DocumentationFile>UITester.xml</DocumentationFile>
     <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036,42314</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -66,38 +66,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AdvancedPathFollower.vb" />
-    <Compile Include="CircularSelector.xaml.vb">
-      <DependentUpon>CircularSelector.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="EndModeSelector.xaml.vb">
-      <DependentUpon>EndModeSelector.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="OrbitComs\OrbitSearch.vb" />
-    <Compile Include="OrbitSeeker.xaml.vb">
-      <DependentUpon>OrbitSeeker.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="OrbitPreset.xaml.vb">
-      <DependentUpon>OrbitPreset.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Settings.vb" />
-    <Compile Include="SpeedSelector.xaml.vb">
-      <DependentUpon>SpeedSelector.xaml</DependentUpon>
-    </Compile>
     <Compile Include="TimeSpanSelector.xaml.vb">
       <DependentUpon>TimeSpanSelector.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Window1.xaml.vb">
-      <DependentUpon>Window1.xaml</DependentUpon>
-    </Compile>
-    <Page Include="CircularSelector.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="EndModeSelector.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -106,30 +77,11 @@
       <DependentUpon>Application.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="OrbitComs\CinefluxOrbitExceptions.vb" />
-    <Compile Include="OrbitComs\CinefluxOrbitStructures.vb" />
-    <Compile Include="OrbitComs\ControllerComm.vb" />
     <Compile Include="MainWindow.xaml.vb">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="OrbitSeeker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="OrbitPreset.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="SpeedSelector.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="TimeSpanSelector.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Window1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -175,15 +127,11 @@
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
     </EmbeddedResource>
-    <None Include="app.config" />
     <None Include="My Project\Settings.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <AppDesigner Include="My Project\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\ClockWise.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>
