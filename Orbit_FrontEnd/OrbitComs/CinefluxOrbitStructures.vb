@@ -154,14 +154,12 @@ End Structure
 <StructLayout(LayoutKind.Sequential)> _
 Public Structure OrbitConfigStruct
     Public Version As Int32
-    Public BatteryLowVoltageLevel As UInt16
-    Public Battery12V_Q8 As UInt16
-    Public PowerResponseLimiter_Slope As Byte
-    Public PowerResponseLimiter_Intercept As Byte
-    Public Counts_Per_Volt As Single
-    Public Volts_Per_Count As Single
-    Public BlacklightPWM_Duty As Byte
-    Public BacklightIdleTImeout As UInt16
+    Public CurrentLimitCounts As UInt16
+    Public VoltageLimit_counts As UInt16
+    Public Counts_per_Volt As Single
+    Public Volts_per_Count As Single
+    Public Counts_per_Amp As Single
+    Public Amps_per_Count As Single
     Public SystemAcceleration As Single
     Public MaxSpeed As Single
     Public PID_MaxError As Int16
@@ -174,14 +172,12 @@ Public Structure OrbitConfigStruct
     Public Function Serialize() As Byte()
         Using ms As New MemoryStream()
             ms.Write(BitConverter.GetBytes(Version), 0, 4)
-            ms.Write(BitConverter.GetBytes(BatteryLowVoltageLevel), 0, 2)
-            ms.Write(BitConverter.GetBytes(Battery12V_Q8), 0, 2)
-            ms.WriteByte(PowerResponseLimiter_Slope)
-            ms.WriteByte(PowerResponseLimiter_Intercept)
+            ms.Write(BitConverter.GetBytes(CurrentLimitCounts), 0, 2)
+            ms.Write(BitConverter.GetBytes(VoltageLimit_counts), 0, 2)
             ms.Write(BitConverter.GetBytes(Counts_Per_Volt), 0, 4)
-            ms.Write(BitConverter.GetBytes(Volts_Per_Count), 0, 4)
-            ms.WriteByte(BlacklightPWM_Duty)
-            ms.Write(BitConverter.GetBytes(BacklightIdleTImeout), 0, 2)
+            ms.Write(BitConverter.GetBytes(Volts_per_Count), 0, 4)
+            ms.Write(BitConverter.GetBytes(Counts_per_Amp), 0, 4)
+            ms.Write(BitConverter.GetBytes(Amps_per_Count), 0, 4)
             ms.Write(BitConverter.GetBytes(SystemAcceleration), 0, 4)
             ms.Write(BitConverter.GetBytes(MaxSpeed), 0, 4)
             ms.Write(BitConverter.GetBytes(PID_MaxError), 0, 2)
@@ -198,14 +194,12 @@ Public Structure OrbitConfigStruct
         Dim idx As Integer = 0
         Dim ret As New OrbitConfigStruct
         ret.Version = BitConverter.ToInt32(DataBytes, idx) : idx += 4
-        ret.BatteryLowVoltageLevel = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
-        ret.Battery12V_Q8 = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
-        ret.PowerResponseLimiter_Slope = DataBytes(idx) : idx += 1
-        ret.PowerResponseLimiter_Intercept = DataBytes(idx) : idx += 1
+        ret.CurrentLimitCounts = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
+        ret.VoltageLimit_counts = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
         ret.Counts_Per_Volt = BitConverter.ToSingle(DataBytes, idx) : idx += 4
-        ret.Volts_Per_Count = BitConverter.ToSingle(DataBytes, idx) : idx += 4
-        ret.BlacklightPWM_Duty = DataBytes(idx) : idx += 1
-        ret.BacklightIdleTImeout = BitConverter.ToUInt16(DataBytes, idx) : idx += 2
+        ret.Volts_per_Count = BitConverter.ToSingle(DataBytes, idx) : idx += 4
+        ret.Counts_per_Amp = BitConverter.ToSingle(DataBytes, idx) : idx += 4
+        ret.Amps_per_Count = BitConverter.ToSingle(DataBytes, idx) : idx += 4
         ret.SystemAcceleration = BitConverter.ToSingle(DataBytes, idx) : idx += 4
         ret.MaxSpeed = BitConverter.ToSingle(DataBytes, idx) : idx += 4
         ret.PID_MaxError = BitConverter.ToInt16(DataBytes, idx) : idx += 2
